@@ -65,7 +65,7 @@ export const Calendar = () => {
                         </span>
                         {events.filter(e => datesAreOnSameDay(e.date, new Date(currentDate.getFullYear(), currentDate.getMonth(), index + 1))).map(event => (
                             <StyledEvent key={event.title} bgColor={event.color} onClick={() => handleEventClick(event)}>
-                                {event.title}: {event.startTime} - {event.endTime}
+                                {event.title}: {event.startTime} - {event.endTime} ({calculateDuration(event.startTime, event.endTime)})
                                 <button onClick={() => handleEventDelete(event.title)}>Delete</button>
                                 <button onClick={() => handleEventEdit(event)}>Edit</button>
                             </StyledEvent>
@@ -83,4 +83,24 @@ export const Calendar = () => {
             )}
         </Wrapper>
     );
+};
+
+const calculateDuration = (startTime, endTime) => {
+    // Check if startTime and endTime are defined
+    if (!startTime || !endTime) return 'Invalid times';
+
+    // Convert start and end times to Date objects
+    const [startHours, startMinutes] = startTime.split(':').map(Number);
+    const [endHours, endMinutes] = endTime.split(':').map(Number);
+
+    // Calculate the duration in minutes
+    const durationMinutes = (endHours * 60 + endMinutes) - (startHours * 60 + startMinutes);
+
+    // Convert duration to hours and minutes format
+    const hours = Math.floor(durationMinutes / 60);
+    const minutes = durationMinutes % 60;
+
+    return `${hours}h ${minutes}min`;
+
+
 };
