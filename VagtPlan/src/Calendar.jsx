@@ -8,47 +8,77 @@ export const Calendar = () => {
     const [events, setEvents] = useState(MOCKAPPS);
     const [showPortal, setShowPortal] = useState(false);
     const [portalData, setPortalData] = useState({});
+    const [error, setError] = useState(null);
 
     const handleEventClick = (event) => {
-        setShowPortal(true);
-        setPortalData(event);
+        if (event) {
+            setShowPortal(true);
+            setPortalData(event);
+        } else {
+            setError('Failed to load event data.');
+        }
     };
 
     const handleEventDelete = (eventTitle) => {
-        setEvents(events.filter(event => event.title !== eventTitle));
+        if (!eventTitle) {
+            setError('Invalid event title for deletion.');
+            return;
+        }
+        const updatedEvents = events.filter(event => event.title !== eventTitle);
+        if (updatedEvents.length === events.length) {
+            setError('No event found to delete.');
+            return;
+        }
+        setEvents(updatedEvents);
         setShowPortal(false);
     };
 
     const handleEventEdit = (event) => {
-        const newTitle = prompt("Edit the event name", event.title);
-        if (newTitle) {
-            setEvents(events.map(ev => ev.title === event.title ? { ...ev, title: newTitle } : ev));
+        if (!event || !event.title) {
+            setError('Invalid event data for editing.');
+            return;
         }
+        const newTitle = prompt("Edit the event name", event.title);
+        if (!newTitle) {
+            setError('No new title provided. Event not updated.');
+            return;
+        }
+        setEvents(events.map(ev => ev.title === event.title ? { ...ev, title: newTitle } : ev));
         setShowPortal(false);
     };
 
     const handleDayClick = (date) => {
+        if (!date) {
+            setError('Invalid date for adding a new event.');
+            return;
+        }
         const shiftName = prompt("Enter the name of the shift:", "");
-        if (!shiftName) return; // Exit if no name is entered
+        if (!shiftName) {
+            setError('Shift name is required.');
+            return;
+        }
 
         const startTime = prompt("Enter the start time of the shift (HH:MM):", "12:00");
         const endTime = prompt("Enter the end time of the shift (HH:MM):", "14:30");
-        if (!startTime || !endTime) return; // Exit if times are not entered
+        if (!startTime || !endTime) {
+            setError('Both start and end times are required.');
+            return;
+        }
 
         const newEvent = {
             date,
             title: shiftName,
             startTime,
             endTime,
-            color: getDarkColor(), // Assign a random color or allow user selection
+            color: getDarkColor(),
         };
 
         setEvents(currentEvents => [...currentEvents, newEvent]);
-        console.log("New shift added:", newEvent);
     };
 
     return (
         <Wrapper>
+            {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
             <DateControls>
                 <ion-icon onClick={() => setCurrentDate(prevMonth(currentDate))} name="arrow-back-circle-outline"></ion-icon>
                 {getMonthYear(currentDate)}
@@ -86,21 +116,16 @@ export const Calendar = () => {
 };
 
 const calculateDuration = (startTime, endTime) => {
-    // Check if startTime and endTime are defined
-    if (!startTime || !endTime) return 'Invalid times';
-
-    // Convert start and end times to Date objects
+    if (!startTime || !endTime) {
+        return 'Invalid times'; // Properly handle the case when time input is invalid
+    }
     const [startHours, startMinutes] = startTime.split(':').map(Number);
     const [endHours, endMinutes] = endTime.split(':').map(Number);
-
-    // Calculate the duration in minutes
     const durationMinutes = (endHours * 60 + endMinutes) - (startHours * 60 + startMinutes);
-
-    // Convert duration to hours and minutes format
+    if (durationMinutes < 0) {
+        return 'End time must be after start time'; // Check for logical errors in time inputs
+    }
     const hours = Math.floor(durationMinutes / 60);
     const minutes = durationMinutes % 60;
-
     return `${hours}h ${minutes}min`;
-
-
 };
