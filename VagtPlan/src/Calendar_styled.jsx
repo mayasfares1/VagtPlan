@@ -6,7 +6,7 @@ height: 99vh;
 `;
 
 export const StyledEvent = styled.span`
-                           background: ${({ bgColor }) => bgColor};
+  background: ${({ bgColor }) => bgColor};
 color: white;
 text-align: left !important;
 padding: 2px 10px;
@@ -15,6 +15,14 @@ border-radius: 10px;
 font-size: 13px;
 cursor: move;
 text-transform: capitalize;
+
+    */                           
+
+  background-color: ${props => props.bgColor};
+  padding: 5px;
+  margin-top: 2px;
+  color: white;
+  cursor: pointer;
 `;
 
 export const SevenColGrid = styled.div`
